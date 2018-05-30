@@ -1,0 +1,9 @@
+drwxr-xr-x    4 madreading madreading       4096 May 16  2017 .
+drwxr-xr-x    7 madreading madreading       4096 May 16  2017 ..
+-rw-r--r--    1 madreading madreading       5427 May 23  2017 edit.blade.php
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 jugadores
+-rw-r--r--    1 madreading madreading       1336 May 23  2017 jugadores.blade.php
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 overrides
+-rw-r--r--    1 madreading madreading       2855 May 23  2017 overrides.blade.php
+-rw-r--r--    1 madreading madreading       3985 May 23  2017 profile.blade.php
+-rw-r--r--    1 madreading madreading        830 May 23  2017 wrapper.blade.php

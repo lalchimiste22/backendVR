@@ -1,0 +1,164 @@
+
+// Fonts
+@import url(https://fonts.googleapis.com/css?family=Raleway:300,400,600);
+
+// Variables
+@import "variables";
+
+// Bootstrap
+@import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+
+@import "node_modules/selectize/dist/css/selectize.bootstrap3";
+
+.navbar {
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1);
+  background-color: $brand-primary;
+}
+
+.navbar .btn {
+  line-height: $nav-lineheight;
+}
+
+.navbar a {
+  color: $nav-text-color;
+}
+
+.navbar a:hover {
+  color: $nav-hover-color;
+}
+
+.nav > li > a:hover, .nav > li > a:focus {
+  color: $nav-hover-color;
+}
+
+.nav .open > a, .nav .open > a:hover, .nav .open > a:focus {
+  color: $nav-hover-color;
+}
+
+.navbar a.navbar-brand:hover {
+  color: #cccccc;
+}
+
+.navbar-nav li span {
+  line-height:$nav-lineheight;
+}
+
+.navbar-nav > li > a {
+  line-height: $nav-lineheight;
+}
+
+.navbar-brand {
+  line-height: $nav-lineheight;
+}
+
+.navbar .btn.btn-danger {
+  color: $brand-primary;
+  background-color: white;
+  border-color:white;
+}
+
+.navbar .btn.btn-danger:hover {
+  color: $brand-primary;
+  background-color: #eeeeee;
+  border-color:#eeeeee;
+}
+
+.footer {
+  height:100px;
+  width:100%;
+}
+
+.content {
+  margin-top: $navbar-height + $navbar-separation;
+}
+
+.buffer-top{
+  margin-top:$standard-buffer;
+}
+
+.buffer-top-small {
+  margin-top:$small-buffer;
+}
+
+.buffer-top-medium {
+  margin-top:$medium-buffer;
+}
+
+.infobox {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin:5px;
+  background: #efefef;
+  color: #333333;
+  border: 1px solid lightgray;
+  text-align: left;
+}
+
+//Login
+body.login {
+  background-size: 25%;
+  background-position: left bottom;
+  background-image: url('../img/girl.png');
+  background-repeat: no-repeat;
+  height: 100vh;
+}
+
+//Perfil
+.profile-info {
+  //background-color: white;
+  border-radius: 15px;
+  padding: 3%;
+}
+
+.square {
+  width: 50%;
+}
+
+.square:after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
+}
+
+img.user-avatar {
+  border: 3px solid lightgray;
+  width: 300px;
+  height:300px;
+  object-fit: cover;
+}
+
+img.user-avatar-small {
+  border: 1px solid lightgray;
+  width: 40px;
+  height:40px;
+  object-fit: cover;
+}
+
+a span.glyphicon-cog {
+  color: $text-color;
+}
+
+//Table
+.table-hover>tbody>tr:hover {
+  cursor: pointer;
+}
+
+table tr:nth-child(even){
+  background-color: $brand-primary;
+  color:white;
+}
+
+table tr:nth-child(odd){
+  background-color: white;
+  color:$brand-primary;
+}
+
+.table-hover > tbody > tr:hover:nth-child(even) {
+  background-color: $brand-primary-light;
+  color:white;
+}
+
+.table-hover > tbody > tr:hover:nth-child(odd) {
+  background-color: #f5f5f5;
+  color:$brand-primary;
+}

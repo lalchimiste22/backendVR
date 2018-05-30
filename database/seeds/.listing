@@ -1,0 +1,4 @@
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 .
+drwxr-xr-x    5 madreading madreading       4096 May 16  2017 ..
+-rw-r--r--    1 madreading madreading        238 May 16  2017 DatabaseSeeder.php
+-rw-r--r--    1 madreading madreading        429 May 16  2017 UsersTableSeeder.php

@@ -1,0 +1,6 @@
+drwxr-xr-x    5 madreading madreading       4096 May 16  2017 .
+drwxr-xr-x   14 madreading 99               4096 May 16  2017 ..
+-rw-r--r--    1 madreading madreading          9 May 16  2017 .gitignore
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 factories
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 migrations
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 seeds

@@ -1,0 +1,7 @@
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 .
+drwxr-xr-x    7 madreading madreading       4096 May 16  2017 ..
+-rw-r--r--    1 madreading madreading      13690 May 23  2017 actividad_select_modal.blade.php
+-rw-r--r--    1 madreading madreading        877 May 23  2017 delete_modal.blade.php
+-rw-r--r--    1 madreading madreading       1414 May 23  2017 select_modal.blade.php
+-rw-r--r--    1 madreading madreading      10122 May 23  2017 show_actividad_modal.blade.php
+-rw-r--r--    1 madreading madreading       4332 May 23  2017 simple_form_modal.blade.php

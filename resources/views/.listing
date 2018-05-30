@@ -1,0 +1,10 @@
+drwxr-xr-x    7 madreading madreading       4096 May 16  2017 .
+drwxr-xr-x    5 madreading madreading       4096 May 16  2017 ..
+-rw-r--r--    1 madreading madreading        565 May 23  2017 app.blade.php
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 auth
+-rw-r--r--    1 madreading madreading         15 May 23  2017 home.blade.php
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 includes
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 recursos
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 tools
+drwxr-xr-x    4 madreading madreading       4096 May 16  2017 user
+-rw-r--r--    1 madreading madreading       2748 May 23  2017 welcome.blade.php

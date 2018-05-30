@@ -1,0 +1,6 @@
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 .
+drwxr-xr-x    7 madreading madreading       4096 May 16  2017 ..
+-rw-r--r--    1 madreading madreading       1203 May 23  2017 create.blade.php
+-rw-r--r--    1 madreading madreading       1264 May 23  2017 edit.blade.php
+-rw-r--r--    1 madreading madreading       2179 May 23  2017 index.blade.php
+-rw-r--r--    1 madreading madreading       1967 May 23  2017 show.blade.php

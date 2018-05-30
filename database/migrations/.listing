@@ -1,0 +1,8 @@
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 .
+drwxr-xr-x    5 madreading madreading       4096 May 16  2017 ..
+-rw-r--r--    1 madreading madreading        884 May 16  2017 2014_10_12_000000_create_users_table.php
+-rw-r--r--    1 madreading madreading        683 May 16  2017 2014_10_12_100000_create_password_resets_table.php
+-rw-r--r--    1 madreading madreading        784 May 16  2017 2017_05_09_195422_CrearTablaRecurso.php
+-rw-r--r--    1 madreading madreading        790 May 16  2017 2017_05_10_164055_CrearTablaJugadores.php
+-rw-r--r--    1 madreading madreading        982 May 16  2017 2017_05_11_145354_CrearTablaRecursoOverrides.php
+-rw-r--r--    1 madreading madreading        902 May 16  2017 2017_05_15_182446_CrearTablaPivoteJugadoresRecursoOverrides.php

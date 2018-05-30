@@ -1,0 +1,13 @@
+drwxr-x---    7 madreading 99               4096 Apr 16 07:24 .
+drwxr-xr-x   14 madreading 99               4096 May 16  2017 ..
+-rw-r--r--    1 madreading madreading        553 May 23  2017 .htaccess
+drwxr-xr-x    2 madreading madreading       4096 Dec  3 15:21 css
+-rw-r--r--    1 madreading madreading       1045 May 16 03:32 error_log
+-rw-r--r--    1 madreading madreading          0 May 16  2017 favicon.ico
+drwxr-xr-x    3 madreading madreading       4096 May 16  2017 fonts
+drwxr-xr-x    2 madreading madreading       4096 May 23  2017 images
+drwxr-xr-x    2 madreading madreading       4096 May 23  2017 img
+-rw-r--r-x    1 madreading madreading       1783 May 23  2017 index.php
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 js
+-rw-r--r--    1 madreading madreading         66 May 23  2017 mix-manifest.json
+-rw-r--r--    1 madreading madreading         24 May 23  2017 robots.txt

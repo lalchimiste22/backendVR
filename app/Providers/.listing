@@ -1,0 +1,7 @@
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 .
+drwxr-xr-x    6 madreading madreading       4096 May 16  2017 ..
+-rw-r--r--    1 madreading madreading        403 May 23  2017 AppServiceProvider.php
+-rw-r--r--    1 madreading madreading        575 May 23  2017 AuthServiceProvider.php
+-rw-r--r--    1 madreading madreading        380 May 23  2017 BroadcastServiceProvider.php
+-rw-r--r--    1 madreading madreading        596 May 23  2017 EventServiceProvider.php
+-rw-r--r--    1 madreading madreading       1529 May 23  2017 RouteServiceProvider.php

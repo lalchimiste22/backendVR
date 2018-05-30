@@ -1,0 +1,9 @@
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 .
+drwxr-xr-x    7 madreading madreading       4096 May 16  2017 ..
+-rw-r--r--    1 madreading madreading         60 May 23  2017 breadcrumbs.blade.php
+-rw-r--r--    1 madreading madreading        115 May 23  2017 errors.blade.php
+-rw-r--r--    1 madreading madreading         28 May 23  2017 footer.blade.php
+-rw-r--r--    1 madreading madreading        294 May 23  2017 head.blade.php
+-rw-r--r--    1 madreading madreading       1515 May 23  2017 header.blade.php
+-rw-r--r--    1 madreading madreading       1437 May 23  2017 navbar_login.blade.php
+-rw-r--r--    1 madreading madreading        533 May 23  2017 navbar_user.blade.php

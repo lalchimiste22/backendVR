@@ -1,0 +1,10 @@
+drwxr-xr-x    6 madreading madreading       4096 May 16  2017 .
+drwxr-xr-x   14 madreading 99               4096 May 16  2017 ..
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 Console
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 Exceptions
+drwxr-xr-x    4 madreading madreading       4096 May 16  2017 Http
+-rw-r--r--    1 madreading madreading        575 May 23  2017 Jugador.php
+drwxr-xr-x    2 madreading madreading       4096 May 16  2017 Providers
+-rw-r--r--    1 madreading madreading        543 May 23  2017 Recurso.php
+-rw-r--r--    1 madreading madreading        808 May 23  2017 RecursoOverride.php
+-rw-r--r--    1 madreading madreading       1089 May 23  2017 User.php
