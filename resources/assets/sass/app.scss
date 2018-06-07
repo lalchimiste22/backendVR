@@ -162,3 +162,25 @@ table tr:nth-child(odd){
   background-color: #f5f5f5;
   color:$brand-primary;
 }
+
+//Recursos
+li.add {
+  color: #fff;
+  background-color: #2ab27b;
+  border-color: #259d6d;
+  cursor:pointer;
+  text-align: center;
+}
+
+li.add:hover {
+  color: #fff;
+  background-color: #20895e;
+  border-color: #196c4b;
+  cursor: pointer;
+  text-align: center;
+}
+
+.list-group-item.list-group-item-small {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}

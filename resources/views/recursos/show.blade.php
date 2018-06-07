@@ -35,6 +35,50 @@
         </div>
     </div>
 
+    <h3>Contenidos:</h3>
+
+    <div class="row">
+        <div class="col-md-12">
+            @if(count($recurso->contenidos) === 0)
+                <small>No hay contenido agregado.</small>
+            @else
+                <ul class="list-group">
+                    @foreach($recurso->contenidos as $c)
+                        <li class="list-group-item">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <small>{{$c->tipo}}</small>
+                                </div>
+                                <div class="col-md-10">
+                                    <span>{{$c->data}}</span>
+
+                                    @if($c->tipo === 'pregunta')
+                                        <hr/>
+                                        <small>Opciones:</small>
+                                        <ul class="list-group">
+                                            @foreach($c->opciones as $o)
+                                                <li class="list-group-item">
+                                                    <div class="row">
+                                                        <div class="col-md-10">
+                                                            {{$o->data}}
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <span class="glyphicon {{$o->correcto ? 'glyphicon-check' : 'glyphicon-unchecked'}}"></span>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
+                                </div>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    </div>
+
 @endsection
 
 @section('script')

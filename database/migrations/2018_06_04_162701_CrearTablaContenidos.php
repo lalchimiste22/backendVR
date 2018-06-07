@@ -19,6 +19,7 @@ class CrearTablaContenidos extends Migration
             $table->string('tipo');
             $table->text('data');
             $table->unsignedInteger('indice')->default(0);
+            $table->timestamps();
 
             $table->foreign('recurso_id')->references('id')->on('recursos');
             $table->softDeletes();

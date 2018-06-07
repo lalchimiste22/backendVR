@@ -14,6 +14,16 @@ class Recurso extends Model
     protected $fillable = ['codigo', 'nombre', 'descripcion'];
 
     /**
+     * Has Many Contenidos
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function contenidos()
+    {
+        return $this->hasMany('App\Contenido');
+    }
+
+    /**
      * ManyToMany relation with User
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany

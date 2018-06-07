@@ -18,7 +18,8 @@ class CrearTablaOpcionesContenido extends Migration
             $table->unsignedInteger('contenido_id');
             $table->text('data');
             $table->unsignedInteger('indice')->default(0);
-            $table->boolean('correcta');
+            $table->boolean('correcto');
+            $table->timestamps();
 
             $table->foreign('contenido_id')->references('id')->on('contenidos');
             $table->softDeletes();
