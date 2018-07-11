@@ -30,4 +30,20 @@ class Contenido extends Model
     public function opciones(){
         return $this->hasMany('App\OpcionContenido');
     }
+
+    public function getTypeDisplayName() {
+        switch($this->attributes['tipo'])
+        {
+            case 'texto':
+                return 'Texto';
+            case 'pregunta':
+                return 'Pregunta';
+            case 'vof':
+                return 'Verdadero/Falso';
+            case'pares':
+                return 'Unir Pares';
+            default:
+                return 'unknown';
+        }
+    }
 }

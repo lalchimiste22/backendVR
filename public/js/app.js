@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 40);
+/******/ 	return __webpack_require__(__webpack_require__.s = 41);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,7 +73,7 @@
 "use strict";
 
 
-var bind = __webpack_require__(7);
+var bind = __webpack_require__(8);
 
 /*global toString:true*/
 
@@ -424,10 +424,10 @@ function getDefaultAdapter() {
   var adapter;
   if (typeof XMLHttpRequest !== 'undefined') {
     // For browsers use XHR adapter
-    adapter = __webpack_require__(3);
+    adapter = __webpack_require__(4);
   } else if (typeof process !== 'undefined') {
     // For node use HTTP adapter
-    adapter = __webpack_require__(3);
+    adapter = __webpack_require__(4);
   }
   return adapter;
 }
@@ -502,270 +502,6 @@ module.exports = defaults;
 
 /***/ }),
 /* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var utils = __webpack_require__(0);
-var settle = __webpack_require__(19);
-var buildURL = __webpack_require__(22);
-var parseHeaders = __webpack_require__(28);
-var isURLSameOrigin = __webpack_require__(26);
-var createError = __webpack_require__(6);
-var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(21);
-
-module.exports = function xhrAdapter(config) {
-  return new Promise(function dispatchXhrRequest(resolve, reject) {
-    var requestData = config.data;
-    var requestHeaders = config.headers;
-
-    if (utils.isFormData(requestData)) {
-      delete requestHeaders['Content-Type']; // Let the browser set it
-    }
-
-    var request = new XMLHttpRequest();
-    var loadEvent = 'onreadystatechange';
-    var xDomain = false;
-
-    // For IE 8/9 CORS support
-    // Only supports POST and GET calls and doesn't returns the response headers.
-    // DON'T do this for testing b/c XMLHttpRequest is mocked, not XDomainRequest.
-    if ("development" !== 'test' &&
-        typeof window !== 'undefined' &&
-        window.XDomainRequest && !('withCredentials' in request) &&
-        !isURLSameOrigin(config.url)) {
-      request = new window.XDomainRequest();
-      loadEvent = 'onload';
-      xDomain = true;
-      request.onprogress = function handleProgress() {};
-      request.ontimeout = function handleTimeout() {};
-    }
-
-    // HTTP basic authentication
-    if (config.auth) {
-      var username = config.auth.username || '';
-      var password = config.auth.password || '';
-      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
-    }
-
-    request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
-
-    // Set the request timeout in MS
-    request.timeout = config.timeout;
-
-    // Listen for ready state
-    request[loadEvent] = function handleLoad() {
-      if (!request || (request.readyState !== 4 && !xDomain)) {
-        return;
-      }
-
-      // The request errored out and we didn't get a response, this will be
-      // handled by onerror instead
-      // With one exception: request that using file: protocol, most browsers
-      // will return status as 0 even though it's a successful request
-      if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
-        return;
-      }
-
-      // Prepare the response
-      var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
-      var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
-      var response = {
-        data: responseData,
-        // IE sends 1223 instead of 204 (https://github.com/mzabriskie/axios/issues/201)
-        status: request.status === 1223 ? 204 : request.status,
-        statusText: request.status === 1223 ? 'No Content' : request.statusText,
-        headers: responseHeaders,
-        config: config,
-        request: request
-      };
-
-      settle(resolve, reject, response);
-
-      // Clean up request
-      request = null;
-    };
-
-    // Handle low level network errors
-    request.onerror = function handleError() {
-      // Real errors are hidden from us by the browser
-      // onerror should only fire if it's a network error
-      reject(createError('Network Error', config));
-
-      // Clean up request
-      request = null;
-    };
-
-    // Handle timeout
-    request.ontimeout = function handleTimeout() {
-      reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED'));
-
-      // Clean up request
-      request = null;
-    };
-
-    // Add xsrf header
-    // This is only done if running in a standard browser environment.
-    // Specifically not if we're in a web worker, or react-native.
-    if (utils.isStandardBrowserEnv()) {
-      var cookies = __webpack_require__(24);
-
-      // Add xsrf header
-      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
-          cookies.read(config.xsrfCookieName) :
-          undefined;
-
-      if (xsrfValue) {
-        requestHeaders[config.xsrfHeaderName] = xsrfValue;
-      }
-    }
-
-    // Add headers to the request
-    if ('setRequestHeader' in request) {
-      utils.forEach(requestHeaders, function setRequestHeader(val, key) {
-        if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
-          // Remove Content-Type if data is undefined
-          delete requestHeaders[key];
-        } else {
-          // Otherwise add header to the request
-          request.setRequestHeader(key, val);
-        }
-      });
-    }
-
-    // Add withCredentials to request if needed
-    if (config.withCredentials) {
-      request.withCredentials = true;
-    }
-
-    // Add responseType to request if needed
-    if (config.responseType) {
-      try {
-        request.responseType = config.responseType;
-      } catch (e) {
-        if (request.responseType !== 'json') {
-          throw e;
-        }
-      }
-    }
-
-    // Handle progress if needed
-    if (typeof config.onDownloadProgress === 'function') {
-      request.addEventListener('progress', config.onDownloadProgress);
-    }
-
-    // Not all browsers support upload events
-    if (typeof config.onUploadProgress === 'function' && request.upload) {
-      request.upload.addEventListener('progress', config.onUploadProgress);
-    }
-
-    if (config.cancelToken) {
-      // Handle cancellation
-      config.cancelToken.promise.then(function onCanceled(cancel) {
-        if (!request) {
-          return;
-        }
-
-        request.abort();
-        reject(cancel);
-        // Clean up request
-        request = null;
-      });
-    }
-
-    if (requestData === undefined) {
-      requestData = null;
-    }
-
-    // Send the request
-    request.send(requestData);
-  });
-};
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/**
- * A `Cancel` is an object that is thrown when an operation is canceled.
- *
- * @class
- * @param {string=} message The message.
- */
-function Cancel(message) {
-  this.message = message;
-}
-
-Cancel.prototype.toString = function toString() {
-  return 'Cancel' + (this.message ? ': ' + this.message : '');
-};
-
-Cancel.prototype.__CANCEL__ = true;
-
-module.exports = Cancel;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = function isCancel(value) {
-  return !!(value && value.__CANCEL__);
-};
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var enhanceError = __webpack_require__(18);
-
-/**
- * Create an Error with the specified message, config, error code, and response.
- *
- * @param {string} message The error message.
- * @param {Object} config The config.
- * @param {string} [code] The error code (for example, 'ECONNABORTED').
- @ @param {Object} [response] The response.
- * @returns {Error} The created error.
- */
-module.exports = function createError(message, config, code, response) {
-  var error = new Error(message);
-  return enhanceError(error, config, code, response);
-};
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = function bind(fn, thisArg) {
-  return function wrap() {
-    var args = new Array(arguments.length);
-    for (var i = 0; i < args.length; i++) {
-      args[i] = arguments[i];
-    }
-    return fn.apply(thisArg, args);
-  };
-};
-
-
-/***/ }),
-/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -11136,6 +10872,270 @@ return jQuery;
 
 
 /***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var utils = __webpack_require__(0);
+var settle = __webpack_require__(19);
+var buildURL = __webpack_require__(22);
+var parseHeaders = __webpack_require__(28);
+var isURLSameOrigin = __webpack_require__(26);
+var createError = __webpack_require__(7);
+var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(21);
+
+module.exports = function xhrAdapter(config) {
+  return new Promise(function dispatchXhrRequest(resolve, reject) {
+    var requestData = config.data;
+    var requestHeaders = config.headers;
+
+    if (utils.isFormData(requestData)) {
+      delete requestHeaders['Content-Type']; // Let the browser set it
+    }
+
+    var request = new XMLHttpRequest();
+    var loadEvent = 'onreadystatechange';
+    var xDomain = false;
+
+    // For IE 8/9 CORS support
+    // Only supports POST and GET calls and doesn't returns the response headers.
+    // DON'T do this for testing b/c XMLHttpRequest is mocked, not XDomainRequest.
+    if ("development" !== 'test' &&
+        typeof window !== 'undefined' &&
+        window.XDomainRequest && !('withCredentials' in request) &&
+        !isURLSameOrigin(config.url)) {
+      request = new window.XDomainRequest();
+      loadEvent = 'onload';
+      xDomain = true;
+      request.onprogress = function handleProgress() {};
+      request.ontimeout = function handleTimeout() {};
+    }
+
+    // HTTP basic authentication
+    if (config.auth) {
+      var username = config.auth.username || '';
+      var password = config.auth.password || '';
+      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
+    }
+
+    request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
+
+    // Set the request timeout in MS
+    request.timeout = config.timeout;
+
+    // Listen for ready state
+    request[loadEvent] = function handleLoad() {
+      if (!request || (request.readyState !== 4 && !xDomain)) {
+        return;
+      }
+
+      // The request errored out and we didn't get a response, this will be
+      // handled by onerror instead
+      // With one exception: request that using file: protocol, most browsers
+      // will return status as 0 even though it's a successful request
+      if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
+        return;
+      }
+
+      // Prepare the response
+      var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
+      var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
+      var response = {
+        data: responseData,
+        // IE sends 1223 instead of 204 (https://github.com/mzabriskie/axios/issues/201)
+        status: request.status === 1223 ? 204 : request.status,
+        statusText: request.status === 1223 ? 'No Content' : request.statusText,
+        headers: responseHeaders,
+        config: config,
+        request: request
+      };
+
+      settle(resolve, reject, response);
+
+      // Clean up request
+      request = null;
+    };
+
+    // Handle low level network errors
+    request.onerror = function handleError() {
+      // Real errors are hidden from us by the browser
+      // onerror should only fire if it's a network error
+      reject(createError('Network Error', config));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Handle timeout
+    request.ontimeout = function handleTimeout() {
+      reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED'));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Add xsrf header
+    // This is only done if running in a standard browser environment.
+    // Specifically not if we're in a web worker, or react-native.
+    if (utils.isStandardBrowserEnv()) {
+      var cookies = __webpack_require__(24);
+
+      // Add xsrf header
+      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
+          cookies.read(config.xsrfCookieName) :
+          undefined;
+
+      if (xsrfValue) {
+        requestHeaders[config.xsrfHeaderName] = xsrfValue;
+      }
+    }
+
+    // Add headers to the request
+    if ('setRequestHeader' in request) {
+      utils.forEach(requestHeaders, function setRequestHeader(val, key) {
+        if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
+          // Remove Content-Type if data is undefined
+          delete requestHeaders[key];
+        } else {
+          // Otherwise add header to the request
+          request.setRequestHeader(key, val);
+        }
+      });
+    }
+
+    // Add withCredentials to request if needed
+    if (config.withCredentials) {
+      request.withCredentials = true;
+    }
+
+    // Add responseType to request if needed
+    if (config.responseType) {
+      try {
+        request.responseType = config.responseType;
+      } catch (e) {
+        if (request.responseType !== 'json') {
+          throw e;
+        }
+      }
+    }
+
+    // Handle progress if needed
+    if (typeof config.onDownloadProgress === 'function') {
+      request.addEventListener('progress', config.onDownloadProgress);
+    }
+
+    // Not all browsers support upload events
+    if (typeof config.onUploadProgress === 'function' && request.upload) {
+      request.upload.addEventListener('progress', config.onUploadProgress);
+    }
+
+    if (config.cancelToken) {
+      // Handle cancellation
+      config.cancelToken.promise.then(function onCanceled(cancel) {
+        if (!request) {
+          return;
+        }
+
+        request.abort();
+        reject(cancel);
+        // Clean up request
+        request = null;
+      });
+    }
+
+    if (requestData === undefined) {
+      requestData = null;
+    }
+
+    // Send the request
+    request.send(requestData);
+  });
+};
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/**
+ * A `Cancel` is an object that is thrown when an operation is canceled.
+ *
+ * @class
+ * @param {string=} message The message.
+ */
+function Cancel(message) {
+  this.message = message;
+}
+
+Cancel.prototype.toString = function toString() {
+  return 'Cancel' + (this.message ? ': ' + this.message : '');
+};
+
+Cancel.prototype.__CANCEL__ = true;
+
+module.exports = Cancel;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = function isCancel(value) {
+  return !!(value && value.__CANCEL__);
+};
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var enhanceError = __webpack_require__(18);
+
+/**
+ * Create an Error with the specified message, config, error code, and response.
+ *
+ * @param {string} message The error message.
+ * @param {Object} config The config.
+ * @param {string} [code] The error code (for example, 'ECONNABORTED').
+ @ @param {Object} [response] The response.
+ * @returns {Error} The created error.
+ */
+module.exports = function createError(message, config, code, response) {
+  var error = new Error(message);
+  return enhanceError(error, config, code, response);
+};
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = function bind(fn, thisArg) {
+  return function wrap() {
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+    return fn.apply(thisArg, args);
+  };
+};
+
+
+/***/ }),
 /* 9 */
 /***/ (function(module, exports) {
 
@@ -11337,8 +11337,9 @@ process.umask = function() { return 0; };
  */
 
 __webpack_require__(30);
-window.Selectize = __webpack_require__(34);
-window.Vue = __webpack_require__(38);
+__webpack_require__(31);
+window.Selectize = __webpack_require__(35);
+window.Vue = __webpack_require__(39);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -11372,7 +11373,7 @@ module.exports = __webpack_require__(13);
 
 
 var utils = __webpack_require__(0);
-var bind = __webpack_require__(7);
+var bind = __webpack_require__(8);
 var Axios = __webpack_require__(15);
 var defaults = __webpack_require__(2);
 
@@ -11407,9 +11408,9 @@ axios.create = function create(instanceConfig) {
 };
 
 // Expose Cancel & CancelToken
-axios.Cancel = __webpack_require__(4);
+axios.Cancel = __webpack_require__(5);
 axios.CancelToken = __webpack_require__(14);
-axios.isCancel = __webpack_require__(5);
+axios.isCancel = __webpack_require__(6);
 
 // Expose all/spread
 axios.all = function all(promises) {
@@ -11430,7 +11431,7 @@ module.exports.default = axios;
 "use strict";
 
 
-var Cancel = __webpack_require__(4);
+var Cancel = __webpack_require__(5);
 
 /**
  * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -11647,7 +11648,7 @@ module.exports = InterceptorManager;
 
 var utils = __webpack_require__(0);
 var transformData = __webpack_require__(20);
-var isCancel = __webpack_require__(5);
+var isCancel = __webpack_require__(6);
 var defaults = __webpack_require__(2);
 
 /**
@@ -11757,7 +11758,7 @@ module.exports = function enhanceError(error, config, code, response) {
 "use strict";
 
 
-var createError = __webpack_require__(6);
+var createError = __webpack_require__(7);
 
 /**
  * Resolve or reject a Promise based on response status.
@@ -12204,7 +12205,7 @@ module.exports = function spread(callback) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-window._ = __webpack_require__(32);
+window._ = __webpack_require__(33);
 
 /**
  * We'll load jQuery and the Bootstrap jQuery plugin which provides support
@@ -12213,9 +12214,9 @@ window._ = __webpack_require__(32);
  */
 
 try {
-  window.$ = window.jQuery = __webpack_require__(8);
+  window.$ = window.jQuery = __webpack_require__(3);
 
-  __webpack_require__(31);
+  __webpack_require__(32);
 } catch (e) {}
 
 /**
@@ -12246,6 +12247,495 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 /***/ }),
 /* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+/*
+
+Quicksand 1.6.0
+
+Reorder and filter items with a nice shuffling animation.
+
+Copyright (c) 2010 Jacek Galanciak (razorjack.net)
+Big thanks for Piotr Petrus (riddle.pl) for deep code review and wonderful docs & demos.
+
+Dual licensed under the MIT and GPL version 2 licenses.
+https://raw.githubusercontent.com/razorjack/quicksand/master/MIT-LICENSE.txt
+https://raw.githubusercontent.com/razorjack/quicksand/master/GPL-LICENSE.txt
+
+Project site: https://razorjack.net/quicksand
+Github site: https://github.com/razorjack/quicksand
+
+ */
+
+// Uses CommonJS, AMD or browser globals to create a jQuery plugin.
+(function (factory) {
+  if (true) {
+    // AMD. Register as an anonymous module.
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+  } else if ((typeof module === 'undefined' ? 'undefined' : _typeof(module)) === 'object' && module.exports) {
+    // Node/CommonJS
+    module.exports = function (root, jQuery) {
+      if (jQuery === undefined) {
+        // require('jQuery') returns a factory that requires window to
+        // build a jQuery instance, we normalize how we use modules
+        // that require this pattern but the window provided is a noop
+        // if it's defined (how jquery works)
+        if (typeof window !== 'undefined') {
+          jQuery = require('jquery');
+        } else {
+          jQuery = require('jquery')(root);
+        }
+      }
+      factory(jQuery);
+      return jQuery;
+    };
+  } else {
+    // Browser globals
+    factory(jQuery);
+  }
+})(function ($) {
+  var cloneWithCanvases = function cloneWithCanvases(jqueryObject) {
+    var clonedJqueryObject = jqueryObject.clone(true, true);
+    var canvases = jqueryObject.find('canvas');
+    if (canvases.length) {
+      var clonedCanvases = clonedJqueryObject.find('canvas');
+      clonedCanvases.each(function (index) {
+        var context = this.getContext('2d');
+        context.drawImage(canvases.get(index), 0, 0);
+      });
+    }
+    return clonedJqueryObject;
+  };
+
+  $.fn.quicksand = function (collection, customOptions) {
+    var options = {
+      duration: 750,
+      easing: 'swing',
+      attribute: 'data-id', // attribute to recognize same items within source and dest
+      adjustHeight: 'call', // 'dynamic' animates height during shuffling (slow), 'call' adjusts it
+      // before or after the animation, false leaves height alone, 'auto' sets it to auto
+      adjustWidth: false, // 'dynamic' animates width during shuffling (slow),
+      // 'call' adjusts it before or after the animation, false leaves the width alone, 'auto' sets it to auto
+      useScaling: false, // enable it if you're using scaling effect
+      enhancement: function enhancement(c) {}, // Visual enhacement (eg. font replacement) function for cloned elements
+      selector: '> *',
+      atomic: false,
+      dx: 0,
+      dy: 0,
+      maxWidth: 0,
+      retainExisting: true // disable if you want the collection of items to be replaced completely by incoming items.
+    };
+
+    $.extend(options, customOptions);
+
+    if (typeof $.transform == 'undefined') {
+      options.useScaling = false;
+    }
+
+    var callbackFunction;
+    if (typeof arguments[1] == 'function') {
+      callbackFunction = arguments[1];
+    } else if (_typeof(arguments[2] == 'function')) {
+      callbackFunction = arguments[2];
+    }
+
+    var that = this;
+    return this.each(function (i) {
+      var val;
+      var animationQueue = []; // used to store all the animation params before starting the animation;
+      // solves initial animation slowdowns
+      var $collection;
+      if (typeof options.attribute == 'function') {
+        $collection = $(collection);
+      } else {
+        $collection = cloneWithCanvases($(collection).filter('[' + options.attribute + ']')); // destination (target) collection
+      }
+      var $sourceParent = $(this); // source, the visible container of source collection
+      var sourceHeight = $(this).css('height'); // used to keep height and document flow during the animation
+      var sourceWidth = $(this).css('width'); // used to keep  width and document flow during the animation
+      var destHeight, destWidth;
+      var adjustHeightOnCallback = false;
+      var adjustWidthOnCallback = false;
+      var offset = $($sourceParent).offset(); // offset of visible container, used in animation calculations
+      var offsets = []; // coordinates of every source collection item
+      var $source = $(this).find(options.selector); // source collection items
+      var width = $($source).innerWidth(); // need for the responsive design
+
+      // Replace the collection and quit if IE6
+      if (navigator.userAgent.match(/msie [6]/i)) {
+        $sourceParent.html('').append($collection);
+        return;
+      }
+
+      // Gets called when any animation is finished
+      var postCallbackPerformed = 0; // prevents the function from being called more than one time
+      var postCallback = function postCallback() {
+        $(this).css('margin', '').css('position', '').css('top', '').css('left', '').css('opacity', '');
+        if (!postCallbackPerformed) {
+          postCallbackPerformed = 1;
+
+          if (!options.atomic) {
+            // hack: used to be: $sourceParent.html($dest.html());
+            // put target HTML into visible source container
+            // but new webkit builds cause flickering when replacing the collections
+            var $toDelete = $sourceParent.find(options.selector);
+            if (!options.retainExisting) {
+              $sourceParent.prepend($dest.find(options.selector));
+              $toDelete.remove();
+            } else {
+              // Avoid replacing elements because we may have already altered items in significant
+              // ways and it would be bad to have to do it again. (i.e. lazy load images)
+              // But $dest holds the correct ordering. So we must re-sequence items in $sourceParent to match.
+              var $keepElements = $([]);
+              $dest.find(options.selector).each(function (i) {
+                var $matchedElement = $([]);
+                if (typeof options.attribute == 'function') {
+                  var val = options.attribute($(this));
+                  $toDelete.each(function () {
+                    if (options.attribute(this) == val) {
+                      $matchedElement = $(this);
+                      return false;
+                    }
+                  });
+                } else {
+                  $matchedElement = $toDelete.filter('[' + options.attribute + '="' + $(this).attr(options.attribute) + '"]');
+                }
+                if ($matchedElement.length > 0) {
+                  // There is a matching element in the $toDelete list and in $dest
+                  // list, so make sure it is in the right location within $sourceParent
+                  // and put it in the list of elements we need to not delete.
+                  $keepElements = $keepElements.add($matchedElement);
+                  if (i === 0) {
+                    $sourceParent.prepend($matchedElement);
+                  } else {
+                    $matchedElement.insertAfter($sourceParent.find(options.selector).get(i - 1));
+                  }
+                }
+              });
+              // Remove whatever is remaining from the DOM
+              $toDelete.not($keepElements).remove();
+            }
+
+            if (adjustHeightOnCallback) {
+              $sourceParent.css('height', destHeight);
+            }
+            if (adjustWidthOnCallback) {
+              $sourceParent.css('width', sourceWidth);
+            }
+          }
+          options.enhancement($sourceParent); // Perform custom visual enhancements on a newly replaced collection
+          if (typeof callbackFunction == 'function') {
+            callbackFunction.call(that);
+          }
+        }
+
+        if ('auto' === options.adjustHeight) {
+          $sourceParent.css('height', 'auto');
+        }
+
+        if ('auto' === options.adjustWidth) {
+          $sourceParent.css('width', 'auto');
+        }
+      };
+
+      // Position: relative situations
+      var $correctionParent = $sourceParent.offsetParent();
+      var correctionOffset = $correctionParent.offset();
+      if ($correctionParent.css('position') == 'relative') {
+        if ($correctionParent.get(0).nodeName.toLowerCase() != 'body') {
+          correctionOffset.top += parseFloat($correctionParent.css('border-top-width')) || 0;
+          correctionOffset.left += parseFloat($correctionParent.css('border-left-width')) || 0;
+        }
+      } else {
+        correctionOffset.top -= parseFloat($correctionParent.css('border-top-width')) || 0;
+        correctionOffset.left -= parseFloat($correctionParent.css('border-left-width')) || 0;
+        correctionOffset.top -= parseFloat($correctionParent.css('margin-top')) || 0;
+        correctionOffset.left -= parseFloat($correctionParent.css('margin-left')) || 0;
+      }
+
+      // perform custom corrections from options (use when Quicksand fails to detect proper correction)
+      if (isNaN(correctionOffset.left)) {
+        correctionOffset.left = 0;
+      }
+      if (isNaN(correctionOffset.top)) {
+        correctionOffset.top = 0;
+      }
+
+      correctionOffset.left -= options.dx;
+      correctionOffset.top -= options.dy;
+
+      // keeps nodes after source container, holding their position
+      if (options.adjustHeight !== false) {
+        $sourceParent.css('height', $(this).height());
+      }
+      if (options.adjustWidth !== false) {
+        $sourceParent.css('width', $(this).width());
+      }
+
+      // get positions of source collections
+      $source.each(function (i) {
+        offsets[i] = $(this).offset();
+      });
+
+      // stops previous animations on source container
+      $(this).stop();
+      var dx = 0;
+      var dy = 0;
+      $source.each(function (i) {
+        $(this).stop(); // stop animation of collection items
+        var rawObj = $(this).get(0);
+        if (rawObj.style.position == 'absolute') {
+          dx = -options.dx;
+          dy = -options.dy;
+        } else {
+          dx = options.dx;
+          dy = options.dy;
+        }
+
+        rawObj.style.position = 'absolute';
+        rawObj.style.margin = '0';
+
+        if (!options.adjustWidth) {
+          rawObj.style.width = width + 'px'; // sets the width to the current element
+          // with even if it has been changed
+          // by a responsive design
+        }
+
+        rawObj.style.top = offsets[i].top - parseFloat(rawObj.style.marginTop) - correctionOffset.top + dy + 'px';
+        rawObj.style.left = offsets[i].left - parseFloat(rawObj.style.marginLeft) - correctionOffset.left + dx + 'px';
+
+        if (options.maxWidth > 0 && offsets[i].left > options.maxWidth) {
+          rawObj.style.display = 'none';
+        }
+      });
+
+      // create temporary container with destination collection
+      var $dest = cloneWithCanvases($($sourceParent));
+      var rawDest = $dest.get(0);
+      rawDest.innerHTML = '';
+      rawDest.setAttribute('id', '');
+      rawDest.style.height = 'auto';
+      rawDest.style.width = $sourceParent.width() + 'px';
+      $dest.append($collection);
+      // Inserts node into HTML. Note that the node is under visible source container in the exactly same position
+      // The browser render all the items without showing them (opacity: 0.0) No offset calculations are needed,
+      // the browser just extracts position from underlayered destination items and sets animation to destination positions.
+      $dest.insertBefore($sourceParent);
+      $dest.css('opacity', 0.0);
+      rawDest.style.zIndex = -1;
+
+      rawDest.style.margin = '0';
+      rawDest.style.position = 'absolute';
+      rawDest.style.top = offset.top - correctionOffset.top + 'px';
+      rawDest.style.left = offset.left - correctionOffset.left + 'px';
+
+      if (options.adjustHeight === 'dynamic') {
+        // If destination container has different height than source container the height can be animated,
+        // adjusting it to destination height
+        $sourceParent.animate({ height: $dest.height() }, options.duration, options.easing);
+      } else if (options.adjustHeight === 'call') {
+        destHeight = $dest.height();
+        if (parseFloat(sourceHeight) < parseFloat(destHeight)) {
+          // Adjust the height now so that the items don't move out of the container
+          $sourceParent.css('height', destHeight);
+        } else {
+          // Adjust later, on callback
+          adjustHeightOnCallback = true;
+        }
+      }
+
+      if (options.adjustWidth === 'dynamic') {
+        // If destination container has different width than source container the width can be animated,
+        // adjusting it to destination width
+        $sourceParent.animate({ width: $dest.width() }, options.duration, options.easing);
+      } else if (options.adjustWidth === 'call') {
+        destWidth = $dest.width();
+        if (parseFloat(sourceWidth) < parseFloat(destWidth)) {
+          // Adjust the height now so that the items don't move out of the container
+          $sourceParent.css('width', destWidth);
+        } else {
+          // Adjust later, on callback
+          adjustWidthOnCallback = true;
+        }
+      }
+
+      // Now it's time to do shuffling animation. First of all, we need to identify same elements within
+      // source and destination collections
+      $source.each(function (i) {
+        var destElement = [];
+        if (typeof options.attribute == 'function') {
+          val = options.attribute($(this));
+          $collection.each(function () {
+            if (options.attribute(this) == val) {
+              destElement = $(this);
+              return false;
+            }
+          });
+        } else {
+          destElement = $collection.filter('[' + options.attribute + '="' + $(this).attr(options.attribute) + '"]');
+        }
+        if (destElement.length) {
+          // The item is both in source and destination collections. It it's under different position, let's move it
+          if (!options.useScaling) {
+            animationQueue.push({
+              element: $(this), dest: destElement,
+              style: {
+                top: $(this).offset().top,
+                left: $(this).offset().left,
+                opacity: ""
+              },
+              animation: {
+                top: destElement.offset().top - correctionOffset.top,
+                left: destElement.offset().left - correctionOffset.left,
+                opacity: 1.0
+              }
+            });
+          } else {
+            animationQueue.push({
+              element: $(this), dest: destElement,
+              style: {
+                top: $(this).offset().top,
+                left: $(this).offset().left,
+                opacity: ""
+              },
+              animation: {
+                top: destElement.offset().top - correctionOffset.top,
+                left: destElement.offset().left - correctionOffset.left,
+                opacity: 1.0,
+                transform: 'scale(1.0)'
+              }
+            });
+          }
+        } else {
+          // The item from source collection is not present in destination collections.  Let's remove it
+          if (!options.useScaling) {
+            animationQueue.push({
+              element: $(this),
+              style: {
+                top: $(this).offset().top,
+                left: $(this).offset().left,
+                opacity: ""
+              },
+              animation: {
+                opacity: '0.0'
+              }
+            });
+          } else {
+            animationQueue.push({
+              element: $(this),
+              style: {
+                top: $(this).offset().top,
+                left: $(this).offset().left,
+                opacity: ""
+              },
+              animation: {
+                opacity: '0.0',
+                transform: 'scale(0.0)'
+              }
+            });
+          }
+        }
+      });
+
+      $collection.each(function (i) {
+        // Grab all items from target collection not present in visible source collection
+        var sourceElement = [];
+        var destElement = [];
+        if (typeof options.attribute == 'function') {
+          val = options.attribute($(this));
+          $source.each(function () {
+            if (options.attribute(this) == val) {
+              sourceElement = $(this);
+              return false;
+            }
+          });
+
+          $collection.each(function () {
+            if (options.attribute(this) == val) {
+              destElement = $(this);
+              return false;
+            }
+          });
+        } else {
+          sourceElement = $source.filter('[' + options.attribute + '="' + $(this).attr(options.attribute) + '"]');
+          destElement = $collection.filter('[' + options.attribute + '="' + $(this).attr(options.attribute) + '"]');
+        }
+
+        var animationOptions;
+        if (sourceElement.length === 0 && destElement.length > 0) {
+
+          // No such element in source collection...
+          if (!options.useScaling) {
+            animationOptions = { opacity: '1.0' };
+          } else {
+            animationOptions = { opacity: '1.0', transform: 'scale(1.0)' };
+          }
+
+          // Let's create it
+          var d = cloneWithCanvases(destElement);
+          var rawDestElement = d.get(0);
+          rawDestElement.style.position = 'absolute';
+          rawDestElement.style.margin = '0';
+
+          if (!options.adjustWidth) {
+            // sets the width to the current element with even if it has been changed by a responsive design
+            rawDestElement.style.width = width + 'px';
+          }
+
+          rawDestElement.style.top = destElement.offset().top - correctionOffset.top + 'px';
+          rawDestElement.style.left = destElement.offset().left - correctionOffset.left + 'px';
+
+          d.css('opacity', 0.0); // IE
+
+          if (options.useScaling) {
+            d.css("transform", "scale(0.0)");
+          }
+          d.appendTo($sourceParent);
+
+          if (options.maxWidth === 0 || destElement.offset().left < options.maxWidth) {
+            animationQueue.push({ element: $(d), dest: destElement, animation: animationOptions });
+          }
+        }
+      });
+
+      $dest.remove();
+      if (!options.atomic) {
+        options.enhancement($sourceParent); // Perform custom visual enhancements during the animation
+        for (i = 0; i < animationQueue.length; i++) {
+          animationQueue[i].element.animate(animationQueue[i].animation, options.duration, options.easing, postCallback);
+        }
+      } else {
+        $toDelete = $sourceParent.find(options.selector);
+        $sourceParent.prepend($dest.find(options.selector));
+        for (i = 0; i < animationQueue.length; i++) {
+          if (animationQueue[i].dest && animationQueue[i].style) {
+            var destElement = animationQueue[i].dest;
+            var destOffset = destElement.offset();
+
+            destElement.css({
+              position: 'relative',
+              top: animationQueue[i].style.top - destOffset.top,
+              left: animationQueue[i].style.left - destOffset.left
+            });
+
+            destElement.animate({ top: "0", left: "0" }, options.duration, options.easing, postCallback);
+          } else {
+            animationQueue[i].element.animate(animationQueue[i].animation, options.duration, options.easing, postCallback);
+          }
+        }
+        $toDelete.remove();
+      }
+    });
+  };
+});
+
+/***/ }),
+/* 32 */
 /***/ (function(module, exports) {
 
 /*!
@@ -14628,7 +15118,7 @@ if (typeof jQuery === 'undefined') {
 
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, module) {var __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -31738,10 +32228,10 @@ if (typeof jQuery === 'undefined') {
   }
 }.call(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(39)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(40)(module)))
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -31885,7 +32375,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
 }));
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -31909,7 +32399,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 (function(root, factory) {
 	if (true) {
-		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8),__webpack_require__(36),__webpack_require__(33)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3),__webpack_require__(37),__webpack_require__(34)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -35086,7 +35576,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 }));
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -35279,7 +35769,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(9)))
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -35787,7 +36277,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
 
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
@@ -35843,7 +36333,7 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(35);
+__webpack_require__(36);
 // On some exotic environments, it's not clear which object `setimmediate` was
 // able to install onto.  Search each possibility in the same order as the
 // `setimmediate` library.
@@ -35857,7 +36347,7 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -46820,10 +47310,10 @@ Vue.compile = compileToFunctions;
 
 module.exports = Vue;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(37).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(38).setImmediate))
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -46851,7 +47341,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(10);

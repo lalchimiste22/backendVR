@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col-xs-10 col-xs-offset-1">
             <h3>Registrar Nueva Recurso</h3>
-            {!! Form::open(['url' => '/recursos']) !!}
+            {!! Form::open(['url' => '/recursos','files' => true]) !!}
             <div class="form-group">
                 {!! Form::label('Código') !!}
                 {!! Form::text('codigo','',['placeholder' => 'Código', 'class' => 'form-control', 'required' => 'required']) !!}

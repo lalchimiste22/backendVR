@@ -17,6 +17,7 @@ class CrearTablaContenidos extends Migration
             $table->increments('id');
             $table->unsignedInteger('recurso_id');
             $table->string('tipo');
+            $table->string('imagen')->default('');
             $table->text('data');
             $table->unsignedInteger('indice')->default(0);
             $table->timestamps();

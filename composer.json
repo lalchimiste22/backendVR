@@ -7,6 +7,7 @@
     "require": {
         "php": ">=5.6.4",
         "creitive/laravel5-breadcrumbs": "^2.0",
+        "kartik-v/bootstrap-fileinput": "dev-master",
         "laravel/framework": "5.4.*",
         "laravel/tinker": "~1.0",
         "laravelcollective/html": "^5.2.0"

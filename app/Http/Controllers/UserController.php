@@ -222,7 +222,7 @@ class UserController extends Controller
             return $item->recurso->codigo;
         });
 
-        $recursos = Recurso::whereIn('codigo',explode(',',$codes))->get()->keyBy('codigo');
+        $recursos = Recurso::with('contenidos','contenidos.opciones')->whereIn('codigo',explode(',',$codes))->get()->keyBy('codigo');
 
         //Override
         foreach($recursos as $key => &$value){
