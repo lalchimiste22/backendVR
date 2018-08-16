@@ -16,9 +16,10 @@ class CrearTablaOpcionesContenido extends Migration
         Schema::create('opciones_contenido', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('contenido_id');
-            $table->text('data');
+            $table->string('data');
+            $table->string('data_secundaria')->defualt('');
+            $table->string('tipo');
             $table->unsignedInteger('indice')->default(0);
-            $table->boolean('marcado')->defualt(false);
             $table->timestamps();
 
             $table->foreign('contenido_id')->references('id')->on('contenidos');

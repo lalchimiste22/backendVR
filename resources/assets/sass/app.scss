@@ -184,3 +184,23 @@ li.add:hover {
   padding-top: 5px;
   padding-bottom: 5px;
 }
+
+//contenteditable textarea
+.texterized {
+  border: 1px solid;
+  height: 60px;
+  overflow-y: scroll;
+  padding: 5px 15px;
+}
+
+.texterized[data-placeholder]:not(:focus):not([data-div-placeholder-content]):before {
+
+  content: attr(data-placeholder);
+
+  float: left;
+
+  margin-left: 2px;
+
+  color: #b3b3b3;
+
+}

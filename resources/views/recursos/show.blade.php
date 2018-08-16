@@ -73,7 +73,7 @@
                                                                     {{$o->data}}
                                                                 </div>
                                                                 <div class="col-md-2">
-                                                                    <span class="glyphicon {{$o->marcado ? 'glyphicon-check' : 'glyphicon-unchecked'}}"></span>
+                                                                    <span class="glyphicon {{$o->data_secundaria ? 'glyphicon-check' : 'glyphicon-unchecked'}}"></span>
                                                                 </div>
                                                             </div>
                                                         </li>
@@ -90,7 +90,7 @@
                                                                     {{$o->data}}
                                                                 </div>
                                                                 <div class="col-md-2">
-                                                                    <span class="glyphicon {{$o->marcado ? 'glyphicon-check' : 'glyphicon-unchecked'}}"></span>
+                                                                    <span class="glyphicon {{$o->data_secundaria ? 'glyphicon-check' : 'glyphicon-unchecked'}}"></span>
                                                                 </div>
                                                             </div>
                                                         </li>
@@ -100,21 +100,63 @@
                                                 <hr/>
                                                 <small>Pares:</small>
                                                 <ul class="list-group">
-                                                    <?php
-                                                        //Group options
-                                                        $opcionesMap = $c->opciones->groupBy('indice');
-                                                    ?>
-                                                    @foreach($opcionesMap as $key => $value)
+                                                    @foreach($c->opciones as $o)
+                                                        <?php
+                                                        //Tipo debería tener subtipo
+                                                        $subTipo = explode('|', $o->tipo)[1];
+                                                        $parTipo = explode('-', $subTipo);
+                                                        ?>
                                                         <li class="list-group-item">
                                                             <div class="row">
-                                                                <div class="col-md-5 text-center">
-                                                                    {{$value[0]->data}}
-                                                                </div>
+                                                                @if($parTipo[0] === 'txt')
+                                                                    <div class="col-md-5 text-center">
+                                                                        {{$o->data}}
+                                                                    </div>
+                                                                @elseif($parTipo[0] === 'img')
+                                                                    <div class="col-md-5 text-center">
+                                                                        <img class="img-responsive"
+                                                                             style="width:50%; margin:0 auto;"
+                                                                             src="{{$o->data}}"/>
+                                                                    </div>
+                                                                @endif
                                                                 <div class="col-md-1">
                                                                     <i class="glyphicon glyphicon-transfer"></i>
                                                                 </div>
+                                                                @if($parTipo[1] === 'txt')
+                                                                    <div class="col-md-5 text-center">
+                                                                        {{$o->data_secundaria}}
+                                                                    </div>
+                                                                @elseif($parTipo[1] === 'img')
+                                                                    <div class="col-md-5 text-center">
+                                                                        <img class="img-responsive"
+                                                                             style="width:50%; margin:0 auto;"
+                                                                             src="{{$o->data_secundaria}}"/>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @elseif($c->tipo === 'parimagenes')
+                                                <hr/>
+                                                <small>Pares:</small>
+                                                <ul class="list-group">
+                                                    @foreach($c->opciones as $o)
+                                                        <li class="list-group-item">
+                                                            <div class="row">
                                                                 <div class="col-md-5 text-center">
-                                                                    {{$value[1]->data}}
+                                                                    <img class="img-responsive"
+                                                                         style="width:50%; margin:0 auto;"
+                                                                         src="{{$o->data}}"/>
+                                                                </div>
+                                                                <div class="col-md-1">
+                                                                    <i class="glyphicon glyphicon-transfer"
+                                                                       style="font-size: 40px"></i>
+                                                                </div>
+                                                                <div class="col-md-5 text-center">
+                                                                    <img class="img-responsive"
+                                                                         style="width:50%; margin:0 auto;"
+                                                                         src="{{$o->data_secundaria}}"/>
                                                                 </div>
                                                             </div>
                                                         </li>

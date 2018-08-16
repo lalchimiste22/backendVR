@@ -17,7 +17,7 @@ class CrearTablaRecurso extends Migration
             $table->increments('id');
             $table->string('codigo');
             $table->string('nombre');
-            $table->text('descripcion')->default('');
+            $table->text('descripcion')/*->default('')*/;
             $table->timestamps();
             $table->softDeletes();
 

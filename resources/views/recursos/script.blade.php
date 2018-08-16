@@ -17,13 +17,15 @@
             '                                <div class="col-md-2">' +
             '                                    <select class="tipo" name="contenidos[{i}][tipo]" style="width:100%;">' +
             '                                        <option value="texto">Texto</option>' +
-            //'                                        <option value="imagen">Imágen</option>' +
             '                                        <option value="pregunta">Pregunta</option>' +
             '                                        <option value="vof">Verdadero/Falso</option>' +
             '                                        <option value="pares">Unir Pares</option>' +
+            '                                        <option value="completar">Completar Texto </option>' +
             '                                    </select>' +
             '                                </div>' +
-            '                                <textarea placeholder="Texto" style="resize:vertical;" class="col-md-5" name="contenidos[{i}][data]" rows="2" required></textarea>' +
+            //'                                <textarea placeholder="Texto" style="resize:vertical;" class="col-md-5" name="contenidos[{i}][data]" rows="2" required></textarea>' +
+            '                                <div contenteditable="true" data-placeholder="Texto" class="textarea col-md-5" data-name="contenidos[{i}][data]" ></div>' +
+            '                                <input type="hidden" name="contenidos[{i}][data]" />' +
             '                               <div class="col-md-5">' +
             '                                  <div class="row img-cont-wrapper">' +
             '                                  </div>' +
@@ -31,14 +33,18 @@
             '                            </div>' +
             '                        </li>';
 
-        var opcionImgPickerTemplate = '                                     <div class="col-md-12">' +
+        var contenidoImgPickerTemplate = '                                     <div class="col-md-12">' +
             '                                        <strong>Imágen</strong>' +
             '                                      </div>' +
             '                                      <div class="col-md-12">' +
             '                                         <input type="file" name="contenidos[{i}][imagen]">' +
             '                                      </div>';
 
-        var opcionItemWrapper = '<li class="list-group-item">' +
+        var opcionImgPickerTemplate = '                                      <div class="col-md-12">' +
+            '                                         <input type="file" name="contenidos[{i}][opciones][{j}][{name}]" required>' +
+            '                                      </div>';
+
+        var opcionItemWrapper = '<li class="list-group-item opcion-item">' +
             '<div class="row">' +
             '<div class="col-md-10 opcion-item-canvass"></div>' +
             '<div class="col-md-2 opcion-item-toolbox text-right">' +
@@ -68,7 +74,8 @@
             '                                </div>\n' +
             '                                <div class="col-md-2">Correcto: </div>\n' +
             '                                <div class="col-md-1">\n' +
-            '                                    <input type="checkbox" name="contenidos[{i}][opciones][{j}][marcado]">\n' +
+            '                                    <input type="checkbox" name="contenidos[{i}][opciones][{j}][data_secundaria]" value="1">\n' +
+            '                                    <input type="hidden" name="contenidos[{i}][opciones][{j}][tipo]" value="pregunta">\n' +
             '                            </div>';
 
         var vofWrapperTemplate = '<div class="row opciones-wrapper"><hr/>\n' +
@@ -89,7 +96,8 @@
             '                                </div>\n' +
             '                                <div class="col-md-2">Verdadero: </div>\n' +
             '                                <div class="col-md-1">\n' +
-            '                                    <input type="checkbox" name="contenidos[{i}][opciones][{j}][marcado]">\n' +
+            '                                    <input type="checkbox" name="contenidos[{i}][opciones][{j}][data_secundaria]" value="1">\n' +
+            '                                    <input type="hidden" name="contenidos[{i}][opciones][{j}][tipo]" value="vof">\n' +
             '                                </div>\n' +
             '                            </div>\n' +
             '                        </li>';
@@ -98,9 +106,17 @@
             '        <div class="col-md-12">\n' +
             '            <div class="text-center"><h5>Pares</h5></div>\n' +
             '            <ul class="opciones">\n' +
-            '                <li class="list-group-item list-group-item-small add agregar-opcion-pares">\n' +
-            '                    <span class="glyphicon glyphicon-plus-sign"></span> Par\n' +
-            '                </li>\n' +
+            '                <li class="list-group-item list-group-item-small"><div class="btn-group btn-group-justified" role="group" aria-label="Justified button group">\n' +
+            '                     <div class="btn-group" role="group">\n' +
+            '                          <button type="button" class="btn btn-default agregar-pares-txt-txt"><span class="glyphicon glyphicon-plus-sign"></span> Texto/Texto</button>\n' +
+            '                     </div>\n' +
+            '                     <div class="btn-group" role="group">\n' +
+            '                          <button type="button" class="btn btn-default agregar-pares-img-img"><span class="glyphicon glyphicon-plus-sign"></span> Imágen/Imágen</button>\n' +
+            '                     </div>\n' +
+            '                     <div class="btn-group" role="group">\n' +
+            '                          <button type="button" class="btn btn-default agregar-pares-txt-img"><span class="glyphicon glyphicon-plus-sign"></span> Texto/Imágen</button>\n' +
+            '                     </div>\n' +
+            '                </li>' +
             '            </ul>\n' +
             '        </div>\n' +
             '    </div>';
@@ -110,16 +126,58 @@
             '                                <div class="col-md-2 text-right">\n' +
             '                                    <label>Par 1:</label>' +
             '                                </div>\n' +
-            '                                <div class="col-md-4">\n' +
-            '                                    <input type="text" placeholder="Max 15 char." name="contenidos[{i}][opciones][{j}][data]" required style="width:100%;" maxlength="10">\n' +
-            '                                    <input type="hidden" name="contenidos[{i}][opciones][{j}][marcado]" checked>\n' +
+            '                                <div class="col-md-10">\n' +
+            '                                    <input type="text" placeholder="Max 15 char." name="contenidos[{i}][opciones][{j}][data]" required style="width:100%;" maxlength="15">\n' +
             '                                </div>\n' +
+            '                            </div>\n' +
+            '                            <div class="row buffer-top-small">\n' +
             '                                <div class="col-md-2 text-right">\n' +
             '                                    <label>Par 2:</label>' +
             '                                </div>\n' +
-            '                                <div class="col-md-4">\n' +
-            '                                    <input type="text" placeholder="Max 15 char." name="contenidos[{i}][opciones][{j}][data2]" required style="width:100%;" maxlength="10">\n' +
+            '                                <div class="col-md-10">\n' +
+            '                                    <input type="text" placeholder="Max 15 char." name="contenidos[{i}][opciones][{j}][data_secundaria]" required style="width:100%;" maxlength="10">\n' +
             '                                </div>\n' +
+            '                                    <input type="hidden" name="contenidos[{i}][opciones][{j}][tipo]" value="pares|txt-txt">\n' +
+            '                            </div>\n' +
+            '                        </li>';
+
+        var unirImgOpcionTemplate = '<li class="list-group-item">\n' +
+            '                            <div class="row">\n' +
+            '                                <div class="col-md-2 text-right">\n' +
+            '                                    <label>Par 1:</label>' +
+            '                                </div>\n' +
+            '                                <div class="col-md-10">\n' +
+            '                                    <input type="file" name="contenidos[{i}][opciones][{j}][data]" required>\n' +
+            '                                </div>\n' +
+            '                            </div>\n' +
+            '                            <div class="row buffer-top-small">\n' +
+            '                                <div class="col-md-2 text-right">\n' +
+            '                                    <label>Par 2:</label>' +
+            '                                </div>\n' +
+            '                                <div class="col-md-10">\n' +
+            '                                    <input type="file" name="contenidos[{i}][opciones][{j}][data_secundaria]" required>\n' +
+            '                                </div>\n' +
+            '                                    <input type="hidden" name="contenidos[{i}][opciones][{j}][tipo]" value="pares|img-img">\n' +
+            '                            </div>\n' +
+            '                        </li>';
+
+        var unirTxtImgOpcionTemplate = '<li class="list-group-item">\n' +
+            '                            <div class="row">\n' +
+            '                                <div class="col-md-2 text-right">\n' +
+            '                                    <label>Par 1:</label>' +
+            '                                </div>\n' +
+            '                                <div class="col-md-10">\n' +
+            '                                    <input type="text" placeholder="Max 15 char." name="contenidos[{i}][opciones][{j}][data]" required style="width:100%;" maxlength="10">\n' +
+            '                                </div>\n' +
+            '                            </div>\n' +
+            '                            <div class="row buffer-top-small">\n' +
+            '                                <div class="col-md-2 text-right">\n' +
+            '                                    <label>Par 2:</label>' +
+            '                                </div>\n' +
+            '                                <div class="col-md-10">\n' +
+            '                                    <input type="file" name="contenidos[{i}][opciones][{j}][data_secundaria]" required>\n' +
+            '                                </div>\n' +
+            '                                    <input type="hidden" name="contenidos[{i}][opciones][{j}][tipo]" value="pares|txt-img">\n' +
             '                            </div>\n' +
             '                        </li>';
 
@@ -161,13 +219,30 @@
         function getContImagePicker($context){
             var indice = $context.hasClass('contenido') ?  $context.attr('data-indice') : $context.closest('.contenido').attr('data-indice');
 
-            var html = opcionImgPickerTemplate.replace(/{i}/g, indice);
+            var html = contenidoImgPickerTemplate.replace(/{i}/g, indice);
             var $picker = $(html);
             $picker.find('[type="file"]').fileinput({
                 showUpload: false,
                 showCancel: false,
                 showPreview: false
             });
+
+            return $picker
+        }
+
+        function getOptImagePicker($context, name){
+            var indice = $context.hasClass('contenido') ?  $context.attr('data-indice') : $context.closest('.contenido').attr('data-indice');
+
+            //Get index = number of prev objects
+            var optionIndex = $context.prevAll().length;
+
+            var html = opcionImgPickerTemplate.replace(/{i}/g, indice).replace(/{j}/g,optionIndex).replace(/{name}/g,name);
+            var $picker = $(html);
+            /*$picker.find('[type="file"]').fileinput({
+                showUpload: false,
+                showCancel: false,
+                showPreview: false
+            });*/
 
             return $picker
         }
@@ -261,12 +336,44 @@
             });
 
             //Unir Pares
-            $('.contenidos').on('click', 'ul.opciones li.agregar-opcion-pares', function () {
+            $('.contenidos').on('click', 'ul.opciones button.agregar-pares-txt-txt', function () {
                 var siguienteIndice = $(this).closest('ul').children('li').length - 1;
                 var html = unirParesOpcionTemplate.replace(/{i}/g, $(this).closest('.contenido').attr('data-indice')).replace(/{j}/g, siguienteIndice);
                 var wrapper = $(opcionItemWrapper);
                 wrapper.find('.opcion-item-canvass').html(html);
-                $(this).before(wrapper);
+                $(this).closest('li').before(wrapper);
+            });
+
+            //Unir Pares Img
+            $('.contenidos').on('click', 'ul.opciones button.agregar-pares-img-img', function () {
+                var siguienteIndice = $(this).closest('ul').children('li').length - 1;
+                var html = unirImgOpcionTemplate.replace(/{i}/g, $(this).closest('.contenido').attr('data-indice')).replace(/{j}/g, siguienteIndice);
+                var $wrapper = $(opcionItemWrapper);
+                $wrapper.find('.opcion-item-canvass').html(html);
+
+                $wrapper.find('[type="file"]').fileinput({
+                    showUpload: false,
+                    showCancel: false,
+                    showPreview: false
+                });
+
+                $(this).closest('li').before($wrapper);
+            });
+
+            //Unir Pares Txt-Img
+            $('.contenidos').on('click', 'ul.opciones button.agregar-pares-txt-img', function () {
+                var siguienteIndice = $(this).closest('ul').children('li').length - 1;
+                var html = unirTxtImgOpcionTemplate.replace(/{i}/g, $(this).closest('.contenido').attr('data-indice')).replace(/{j}/g, siguienteIndice);
+                var $wrapper = $(opcionItemWrapper);
+                $wrapper.find('.opcion-item-canvass').html(html);
+
+                $wrapper.find('[type="file"]').fileinput({
+                    showUpload: false,
+                    showCancel: false,
+                    showPreview: false
+                });
+
+                $(this).closest('li').before($wrapper);
             });
 
             //Common
@@ -349,6 +456,14 @@
 
             $('.contenidos').on('click', '.img-cont-remove', function (e) {
                 $(this).closest('.img-cont-wrapper').html(getContImagePicker($(this)));
+
+                //Don't want to send the form
+                e.preventDefault();
+            });
+
+            $('.contenidos').on('click', '.img-opt-remove', function (e) {
+                var index = $(this).closest('.opcion-item-canvass').prevAll('.opcion-item-canvass').length;
+                $(this).closest('.img-opt-wrapper').html(getOptImagePicker($(this).closest('.opcion-item'),$(this).data('for')));
 
                 //Don't want to send the form
                 e.preventDefault();

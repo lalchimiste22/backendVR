@@ -49,6 +49,10 @@
                                             <option value="pares" {{$c->tipo === 'pares' ? 'selected' : ''}}>Unir
                                                 Pares
                                             </option>
+                                            <option value="parimagenes" {{$c->tipo === 'parimagenes' ? 'selected' : ''}}>
+                                                Unir
+                                                Imágenes
+                                            </option>
                                         </select>
                                     </div>
                                     <textarea placeholder="Texto" class="col-md-5" name="contenidos[{{$i}}][data]"
@@ -98,7 +102,7 @@
                                             <ul class="opciones">
                                                 @for($j = 0; $j < count($c->opciones); $j++)
                                                     <?php $o = $c->opciones[$j];?>
-                                                    <li class="list-group-item">
+                                                    <li class="list-group-item  opcion-item">
                                                         <div class="row">
                                                             <div class="col-md-10 opcion-item-canvass">
                                                                 <div class="row">
@@ -111,11 +115,15 @@
                                                                     <div class="col-md-2">Correcto:</div>
                                                                     <div class="col-md-1">
                                                                         <input type="checkbox"
-                                                                               name="contenidos[{{$i}}][opciones][{{$j}}][marcado]" {{$o->marcado ? 'checked' : ''}}>
+                                                                               name="contenidos[{{$i}}][opciones][{{$j}}][data_secundaria]"
+                                                                               value="1" {{$o->data_secundaria ? 'checked' : ''}}>
                                                                     </div>
                                                                     <input type="hidden"
                                                                            name="contenidos[{{$i}}][opciones][{{$j}}][id]"
                                                                            value="{{$o->id}}"/>
+                                                                    <input type="hidden"
+                                                                           name="contenidos[{{$i}}][opciones][{{$j}}][tipo]"
+                                                                           value="{{$o->tipo}}"/>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-2 opcion-item-toolbox text-right">
@@ -150,48 +158,92 @@
                                             <div class="text-center">
                                                 <h5>Pares</h5></div>
                                             <ul class="opciones">
-                                                <?php
-                                                $opcionMap = $c->opciones->groupBy('indice');
-                                                ?>
-                                                @foreach($opcionMap as $key => $value)
+                                                @for($j = 0; $j < count($c->opciones); $j++)
                                                     <?php
-                                                    $o1 = $value[0];
-                                                    $o2 = $value[1];
+                                                    $o = $c->opciones[$j];
+
+                                                    //Tipo debería tener subtipo
+                                                    $subTipo = explode('|', $o->tipo)[1];
+                                                    $parTipo = explode('-', $subTipo);
+
                                                     ?>
-                                                    <li class="list-group-item">
+                                                    <li class="list-group-item opcion-item">
                                                         <div class="row">
                                                             <div class="col-md-10 opcion-item-canvass">
-                                                                <div class="row">
-                                                                    <div class="col-md-2">
-                                                                        <label>Par 1:</label>
+                                                                <div class="list-group-item">
+                                                                    <div class="row">
+                                                                        <div class="col-md-2 text-right">
+                                                                            <label>Par 1:</label>
+                                                                        </div>
+                                                                        <div class="col-md-10">
+                                                                            <div class="row img-opt-wrapper">
+                                                                                @if($parTipo[0] === 'txt' )
+                                                                                    <div class="col-md-12">
+                                                                                        <input type="text"
+                                                                                               name="contenidos[{{$i}}][opciones][{{$j}}][data]"
+                                                                                               placeholder="Max 15 char."
+                                                                                               required
+                                                                                               value="{{$o->data}}"
+                                                                                               style="width:100%;"
+                                                                                               maxlength="15"/>
+                                                                                    </div>
+                                                                                @elseif($parTipo[0] === 'img')
+                                                                                    <div class="col-md-9">
+                                                                                        <button class="btn btn-block btn-danger img-opt-remove" data-for="data">
+                                                                                            <span class="glyphicon glyphicon-trash"> Eliminar</span>
+                                                                                        </button>
+                                                                                    </div>
+                                                                                    <div class="col-md-3">
+                                                                                        <img src="{{$o->data}}"
+                                                                                             class="img-responsive"/>
+                                                                                    </div>
+                                                                                    <input type="hidden"
+                                                                                           name="contenidos[{{$i}}][opciones][{{$j}}][data]"
+                                                                                           required
+                                                                                           value="{{$o->data}}"/>
+                                                                                @endif
+                                                                            </div>
+                                                                            <input type="hidden"
+                                                                                   name="contenidos[{{$i}}][opciones][{{$j}}][id]"
+                                                                                   value="{{$o->id}}"/>
+                                                                            <input type="hidden"
+                                                                                   name="contenidos[{{$i}}][opciones][{{$j}}][tipo]"
+                                                                                   value="{{$o->tipo}}"/>
+                                                                        </div>
                                                                     </div>
-                                                                    <div class="col-md-4">
-                                                                        <input type="text"
-                                                                               name="contenidos[{{$i}}][opciones][{{$key}}][data]"
-                                                                               required style="width:100%;"
-                                                                               value="{{$o1->data}}">
-                                                                        <input type="hidden"
-                                                                               name="contenidos[{{$i}}][opciones][{{$key}}][id]"
-                                                                               value="{{$o1->id}}"/>
-                                                                        <input type="hidden"
-                                                                               name="contenidos[{{$i}}][opciones][{{$key}}][marcado]"
-                                                                               value="{{$o1->marcado}}"/>
-                                                                    </div>
-                                                                    <div class="col-md-2">
-                                                                        <label>Par 2:</label>
-                                                                    </div>
-                                                                    <div class="col-md-4">
-                                                                        <input type="text"
-                                                                               name="contenidos[{{$i}}][opciones][{{$key}}][data2]"
-                                                                               required style="width:100%;"
-                                                                               value="{{$o2->data}}">
-
-                                                                        <input type="hidden"
-                                                                               name="contenidos[{{$i}}][opciones][{{$key}}][id2]"
-                                                                               value="{{$o2->id}}"/>
-                                                                        <input type="hidden"
-                                                                               name="contenidos[{{$i}}][opciones][{{$key}}][marcado2]"
-                                                                               value="{{$o2->marcado}}"/>
+                                                                    <div class="row buffer-top-small">
+                                                                        <div class="col-md-2  text-right">
+                                                                            <label>Par 2:</label>
+                                                                        </div>
+                                                                        <div class="col-md-10">
+                                                                            <div class="row img-opt-wrapper">
+                                                                                @if($parTipo[1] === 'txt' )
+                                                                                    <div class="col-md-12">
+                                                                                        <input type="text"
+                                                                                               name="contenidos[{{$i}}][opciones][{{$j}}][data_secundaria]"
+                                                                                               placeholder="Max 15 char."
+                                                                                               required
+                                                                                               value="{{$o->data_secundaria}}"
+                                                                                               style="width:100%;"
+                                                                                               maxlength="15"/>
+                                                                                    </div>
+                                                                                @elseif($parTipo[1] === 'img')
+                                                                                    <div class="col-md-9">
+                                                                                        <button class="btn btn-block btn-danger img-opt-remove"  data-for="data_secundaria">
+                                                                                            <span class="glyphicon glyphicon-trash"> Eliminar</span>
+                                                                                        </button>
+                                                                                    </div>
+                                                                                    <div class="col-md-3">
+                                                                                        <img src="{{$o->data_secundaria}}"
+                                                                                             class="img-responsive"/>
+                                                                                    </div>
+                                                                                    <input type="hidden"
+                                                                                           name="contenidos[{{$i}}][opciones][{{$j}}][data_secundaria]"
+                                                                                           required
+                                                                                           value="{{$o->data_secundaria}}"/>
+                                                                                @endif
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -213,9 +265,31 @@
                                                             </div>
                                                         </div>
                                                     </li>
-                                                @endforeach
-                                                <li class="list-group-item list-group-item-small add agregar-opcion">
-                                                    <span class="glyphicon glyphicon-plus-sign"></span> Par
+                                                @endfor
+                                                <li class="list-group-item list-group-item-small">
+                                                    <div class="btn-group btn-group-justified" role="group"
+                                                         aria-label="Justified button group">
+                                                        <div class="btn-group" role="group">
+                                                            <button type="button"
+                                                                    class="btn btn-default agregar-pares-txt-txt"><span
+                                                                        class="glyphicon glyphicon-plus-sign"></span>
+                                                                Texto/Texto
+                                                            </button>
+                                                        </div>
+                                                        <div class="btn-group" role="group">
+                                                            <button type="button"
+                                                                    class="btn btn-default agregar-pares-img-img"><span
+                                                                        class="glyphicon glyphicon-plus-sign"></span>
+                                                                Imágen/Imágen
+                                                            </button>
+                                                        </div>
+                                                        <div class="btn-group" role="group">
+                                                            <button type="button"
+                                                                    class="btn btn-default agregar-pares-txt-img"><span
+                                                                        class="glyphicon glyphicon-plus-sign"></span>
+                                                                Texto/Imágen
+                                                            </button>
+                                                        </div>
                                                 </li>
                                             </ul>
                                         </div>

@@ -40,10 +40,10 @@ class Contenido extends Model
                 return 'Pregunta';
             case 'vof':
                 return 'Verdadero/Falso';
-            case'pares':
+            case 'pares':
                 return 'Unir Pares';
             default:
-                return 'unknown';
+                return 'Desconocido';
         }
     }
 }

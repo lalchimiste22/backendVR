@@ -8,6 +8,7 @@ use App\Recurso;
 use Creitive\Breadcrumbs\Facades\Breadcrumbs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class RecursosController extends Controller
 {
@@ -48,23 +49,18 @@ class RecursosController extends Controller
             $recurso->save();
 
             //Buscar contenido y agregarlo
-            foreach ($data['contenidos'] as $c) {
+            for ($j = 0; $j < count($data['contenidos']); $j++) {
+                $c = $data['contenidos'][$j];
                 $contenido = new Contenido();
                 $contenido->tipo = $c['tipo'];
                 $contenido->data = $c['data'];
+                $contenido->indice = $j;
                 $contenido->recurso()->associate($recurso);
 
                 //Buscar imagen
                 $uploadedFile = array_get($c, 'imagen', null);
                 if (isset($uploadedFile)) {
-                    //Parsear y copiar imagen
-                    $filename = uniqid('recurso-' . $recurso->id . '-img-') . '.' . $uploadedFile->getClientOriginalExtension();
-                    $moved = $uploadedFile->move(storage_path($this->uploadRelativePath), $filename);
-
-                    if (!$moved)
-                        throw new \Exception("Error moviendo archivo");
-
-                    $contenido->imagen = asset($this->assetRelativePath . $filename);
+                    $contenido->imagen = $this->processUploadedFile($uploadedFile, $recurso->id);
                 }
 
                 $contenido->save();
@@ -75,20 +71,23 @@ class RecursosController extends Controller
                         $opt = $c['opciones'][$i];
                         $opcion = new OpcionContenido();
                         $opcion->data = $opt['data'];
-                        $opcion->marcado = array_get($opt, 'marcado', false) === 'on' ? true : false;
+                        $opcion->data_secundaria = array_get($opt,'data_secundaria', '');
+                        $opcion->tipo = $opt['tipo'];
                         $opcion->indice = $i;
                         $opcion->contenido()->associate($contenido);
-                        $opcion->save();
 
-                        //Caso especial con pares
-                        if (array_key_exists('data2', $opt)) {
-                            $parOpcion = new OpcionContenido();
-                            $parOpcion->data = $opt['data'];
-                            $parOpcion->indice = $i;
-                            $parOpcion->marcado = false;
-                            $parOpcion->contenido()->associate($contenido);
-                            $parOpcion->save();
+                        //Check if the data uploaded was actually an UploadedFile
+                        if(is_a($opcion->data, UploadedFile::class))
+                        {
+                            $opcion->data = $this->processUploadedFile($opcion->data, $recurso->id . '-opcion');
                         }
+
+                        if(is_a($opcion->data_secundaria, UploadedFile::class))
+                        {
+                            $opcion->data_secundaria = $this->processUploadedFile($opcion->data_secundaria, $recurso->id . '-opcion');
+                        }
+
+                        $opcion->save();
                     }
                 }
             }
@@ -147,7 +146,7 @@ class RecursosController extends Controller
                 {
                     if(file_exists(storage_path($this->uploadRelativePath) . basename($contenido->imagen)))
                         unlink(storage_path($this->uploadRelativePath) . basename($contenido->imagen));
-                    
+
                     $contenido->imagen = '';
                 }
 
@@ -174,26 +173,47 @@ class RecursosController extends Controller
                         $opt = $c['opciones'][$i];
                         $optId = array_get($opt, 'id', 0);
                         $opcion = OpcionContenido::findOrNew($optId);
-                        $opcion->data = $opt['data'];
-                        $opcion->marcado = array_get($opt, 'marcado', false) === 'on' ? true : false;
                         $opcion->indice = $i;
+                        $opcion->tipo = $opt['tipo'];
                         $opcion->contenido()->associate($contenido);
+
+                        //Eliminar imágen antigua si esta fue desvinculada
+                        if($opcion->containsImageOnPrimaryData() && array_get($opt, 'data','') !== $opcion->data)
+                        {
+                            if(file_exists(storage_path($this->uploadRelativePath) . basename($opcion->data)))
+                                unlink(storage_path($this->uploadRelativePath) . basename($opcion->data));
+                        }
+
+                        //Luego de la posible eliminacion, setear
+                        $opcion->data = $opt['data'];
+
+                        //Check if the data uploaded was actually an UploadedFile
+                        if(is_a($opcion->data, UploadedFile::class))
+                        {
+                            $path = $this->processUploadedFile($opcion->data, $recurso->id . '-opcion');
+                            $opcion->data = $path;
+                        }
+
+                        //Secondary data processing
+                        if($opcion->containsImageOnSecondaryData()&& array_get($opt, 'data_secundaria', '') !== $opcion->data_secundaria)
+                        {
+                            if(file_exists(storage_path($this->uploadRelativePath) . basename($opcion->data_secundaria)))
+                                unlink(storage_path($this->uploadRelativePath) . basename($opcion->data_secundaria));
+                        }
+
+                        //Luego de la posible eliminacion, setear
+                        $opcion->data_secundaria = array_get($opt, 'data_secundaria', '');
+
+                        //Check if the data uploaded was actually an UploadedFile
+                        if(is_a($opcion->data_secundaria, UploadedFile::class))
+                        {
+                            $path = $this->processUploadedFile($opcion->data_secundaria, $recurso->id . '-opcion');
+                            $opcion->data_secundaria = $path;
+                        }
+
                         $opcion->save();
 
                         $opcionMap[$opcion->id] = $opcion;
-
-                        //Caso especial con pares
-                        if (array_key_exists('data2', $opt)) {
-                            $optId = array_get($opt, 'id2', 0);
-                            $parOpcion = OpcionContenido::findOrNew($optId);
-                            $parOpcion->data = $opt['data2'];
-                            $parOpcion->indice = $i;
-                            $parOpcion->marcado = false;
-                            $parOpcion->contenido()->associate($contenido);
-                            $parOpcion->save();
-
-                            $opcionMap[$parOpcion->id] = $opcion;
-                        }
                     }
                 }
 
@@ -224,5 +244,23 @@ class RecursosController extends Controller
         $recurso->delete();
 
         return 'true';
+    }
+
+    /**
+     * @param UploadedFile $uploadedFile
+     * @param $uniqueId
+     * @return string
+     * @throws \Exception
+     */
+    private function processUploadedFile(UploadedFile $uploadedFile, $identifier)
+    {
+        //Parsear y copiar imagen
+        $filename = uniqid('recurso-' . $identifier . '-img-') . '.' . $uploadedFile->getClientOriginalExtension();
+        $moved = $uploadedFile->move(storage_path($this->uploadRelativePath), $filename);
+
+        if (!$moved)
+            throw new \Exception("Error moviendo archivo");
+
+        return asset($this->assetRelativePath . $filename);
     }
 }
